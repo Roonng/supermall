@@ -29,7 +29,7 @@
   import RecommendView from './childComps/RecommendView'
   import FeatureView from './childComps/FeatureView'
 
-  import NavBar from 'components/common/navbar/NarBar'
+  import NavBar from 'components/common/navbar/NavBar'
   import TabControl from 'components/content/tabControl/TabControl'
   import GoodsList from 'components/content/goods/GoodsList'
   import Scroll from 'components/common/scroll/Scroll'
@@ -37,6 +37,10 @@
 
   import {getHomeMultidata, getHomeGoods} from "network/home";
   import {request} from "../../network/request";
+  import {debounce} from "common/utils";
+  import {goodsImgListenerMixin} from 'common/mixin'
+
+
 
 
   export default {
@@ -51,6 +55,15 @@
       Scroll,
       BackTop
     },
+    activated(){
+      this.$refs.scroll.scrollTo(0, this.saveY, 0);
+      this.$refs.scroll.refresh()
+    },
+    deactivated(){
+      this.saveY = this.$refs.scroll.getScrollY();
+
+      this.$bus.$off('goodsImgLoad',this.goodsImgListener)
+    },
     data(){
       return{
         banners: [],
@@ -64,8 +77,10 @@
         tabBarOffsetTop:0,
         isShowBackTop: false,
         isshowTabbar: false,
+        saveY: 0,
       }
     },
+    mixins: [goodsImgListenerMixin],
     created(){
       //获取主页多数据
       this.getHomeMultidata();
@@ -76,9 +91,7 @@
 
     },
     mounted(){
-      this.$bus.$on('imgOnload',() =>{
-        this.$refs.scroll.refresh()
-      })
+
     },
     methods: {
       /**
@@ -102,11 +115,14 @@
       swiperimgLoad(){
         this.tabBarOffsetTop = this.$refs.tabControl2.$el.offsetTop;
       },
+      //点击按钮回到页面顶部
       backClick(){
         this.$refs.scroll.scrollTo(0, 0, 500);
+        this.$refs.scroll.refresh();
       },
+      //显示或隐藏返回顶部按钮
       showScrollTop(position){
-        this.isShowBackTop = -position.y >1000
+        this.isShowBackTop = -position.y > 1000
         this.isshowTabbar = -position.y > this.tabBarOffsetTop
       },
       scrollUpload(){
@@ -125,7 +141,6 @@
       getHomeGoods(type){
         const page = this.goods[type].page + 1;
         getHomeGoods(type, page).then(res =>{
-          console.log(res);
           this.goods[type].page += 1;
           this.goods[type].list.push(...res.data.data.list);
           this.$refs.scroll.finishPullup()

@@ -1,6 +1,7 @@
 <template>
-  <div class="goods-item">
-    <img :src="goodsItem.show.img" @load="imgOnload">
+  <div class="goods-item" @click="itemClick">
+    <!--<img :src="showImg" @load="imgOnload">-->
+    <img v-lazy="showImg" @load="imgOnload">
     <div class="goods-info">
       <p>{{goodsItem.title}}</p>
       <span class="price">{{goodsItem.price}}</span>
@@ -22,7 +23,15 @@
     },
     methods: {
       imgOnload(){
-        this.$bus.$emit('imgOnload')
+        this.$bus.$emit('goodsImgOnload')
+      },
+      itemClick(){
+        this.$router.push('/detail/' + this.goodsItem.iid)
+      }
+    },
+    computed: {
+      showImg(){
+        return this.goodsItem.image || this.goodsItem.show.img
       }
     }
   }

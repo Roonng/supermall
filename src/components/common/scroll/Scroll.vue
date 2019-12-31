@@ -39,14 +39,12 @@
         })
       }
 
-
       //监听上拉事件
       if(this.pullUpLoad){
         this.scroll.on('pullingUp',() => {
           this.$emit('pullingUp')
         })
       }
-
     },
     methods: {
       scrollTo(x, y, time=300){
@@ -57,6 +55,9 @@
       },
       refresh(){
         this.scroll && this.scroll.refresh()
+      },
+      getScrollY(){
+        return this.scroll.y
       }
     }
   }
